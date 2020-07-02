@@ -43,7 +43,7 @@ setOutbound = function(outbound){
 				security=outbound.tls;
 				tlsSettings = outbound.tls ? {
 					allowInsecure = outbound.tlsAllowInsecure;
-         	 		serverName = outbound.tlsServerName;
+							serverName = outbound.tlsServerName;
 				}
 			};
 			tag="proxy"

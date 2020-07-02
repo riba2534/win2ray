@@ -29,13 +29,23 @@ import v2ray.core;
 var activeOutbound = function(outboundIndex,outboundAddress){
 	if( v2ray.core.restart(frmV2ray.edit,config.proxy.outbounds[outboundIndex]) ){
 		
-    	..thread.invoke( 
-    		function(frmV2ray,outboundIndex,outboundAddress,port){
-    			sleep(1000);
-    			import wsock.tcp.socks5Client;
-    			
-    			var client = wsock.tcp.socks5Client("127.0.0.1",port); 
-    			client.setTimeouts(1000,1000);
+		..thread.invoke( 
+			function(frmV2ray,outboundIndex,outboundAddress,port){
+				
+				import wsock.tcp.socks5Client;
+				
+				var client;
+				for(i=1;5;1){
+					sleep(1000);
+					client = wsock.tcp.socks5Client("127.0.0.1",port); 
+					if(client)break;
+				}
+				if(!client){
+					frmV2ray.onStartV2rayFailed(outboundIndex);
+					return;
+				};
+				
+				client.setTimeouts(1000,1000);
 				if(client.connect("www.google.com",80) ){
 					var sendData =/***********
 GET /  HTTP/1.1
@@ -68,36 +78,37 @@ Accept-Charset:utf-8;
 						}
 					} 
 				}
-    			
-    			frmV2ray.onStartV2rayFailed(outboundIndex);
-    		},frmV2ray,outboundIndex,outboundAddress,v2ray.core.getPort()
-    	)
+				
+				frmV2ray.onStartV2rayFailed(outboundIndex);
+			},frmV2ray,outboundIndex,outboundAddress,v2ray.core.getPort()
+		)
 	}	
 }
 
 frmV2ray.onStartV2rayComplete = function(outboundIndex){
-    frmV2ray.listview.ensureVisible(outboundIndex);
+	frmV2ray.listview.ensureVisible(outboundIndex);
 	frmV2ray.listview.setItemText("活动服务器：正常",outboundIndex,7);
-    frmV2ray.edit.print("已切换到服务器：",frmV2ray.listview.getItemText(outboundIndex,2)); 
-  	if(frmV2ray.listview.getItemText(outboundIndex,6)=="不可用"){
-  		frmV2ray.listview.setItemText("...",outboundIndex,6);
-  	}
-  	
-    frmV2ray.onTcpingReturn = function(){}
-    frmV2ray.btnTcping.disabledText = null;
+	frmV2ray.edit.print("已切换到服务器：",frmV2ray.listview.getItemText(outboundIndex,2));
+
+		if(frmV2ray.listview.getItemText(outboundIndex,6)=="不可用"){
+			frmV2ray.listview.setItemText("...",outboundIndex,6);
+		}
+		
+	frmV2ray.onTcpingReturn = function(){}
+	frmV2ray.btnTcping.disabledText = null;
 }
 
 frmV2ray.onStartV2rayFailed = function(outboundIndex){
-    frmV2ray.listview.ensureVisible(outboundIndex);
+	frmV2ray.listview.ensureVisible(outboundIndex);
 	frmV2ray.listview.setItemText("活动服务器：异常",outboundIndex,7);
 	frmV2ray.edit.print("已切换到服务器：",frmV2ray.listview.getItemText(outboundIndex,2)); 
 	frmV2ray.btnTcping.disabledText = null;
 }
 
 var tcping = function(frmV2ray,outboundIndex,address){ 
-    import wsock.tcp.client; 
-    var item = frmV2ray.listview.items[outboundIndex];
-    
+	import wsock.tcp.client; 
+	var item = frmV2ray.listview.items[outboundIndex];
+	
 	var timeout = 0; 
 	for(i=1;8;1){ 
 		var client = wsock.tcp.client(); 	
@@ -128,8 +139,8 @@ var tcping = function(frmV2ray,outboundIndex,address){
 import style;
 frmV2ray.btnTcping.skin(style.primaryButton);
 frmV2ray.btnTcping.oncommand = function(id,event){
-   
-    var items = frmV2ray.listview.items;
+	
+	var items = frmV2ray.listview.items;
 	if(#items){
 		frmV2ray.btnTcping.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'}
 		if(!v2ray.core.getPath()){
@@ -138,24 +149,24 @@ frmV2ray.btnTcping.oncommand = function(id,event){
 			return;
 		}
 		
-    	frmV2ray.onTcpingReturn = function(outboundIndex,address,succeeded){
-    		if(address!=frmV2ray.listview.getItemText(outboundIndex,2)){
-    			return; 
-    		}
-    		
-    		if(succeeded){
-    			frmV2ray.onTcpingReturn = function(outboundIndex){}
-        		activeOutbound(outboundIndex,address);	
-    		}
-    	}
-    	
+		frmV2ray.onTcpingReturn = function(outboundIndex,address,succeeded){
+			if(address!=frmV2ray.listview.getItemText(outboundIndex,2)){
+				return; 
+			}
+			
+			if(succeeded){
+				frmV2ray.onTcpingReturn = function(outboundIndex){}
+				activeOutbound(outboundIndex,address);	
+			}
+		}
+		
 		for b,v in table.eachIndex(config.proxy.outbounds){
-    		frmV2ray.listview.setItemText("...",b,6);
-    		frmV2ray.listview.setItemText("",b,7);
-    	}
-    	
-    	var handles = {}	
-    	thread.createSuspended(true);
+			frmV2ray.listview.setItemText("...",b,6);
+			frmV2ray.listview.setItemText("",b,7);
+		}
+		
+		var handles = {}	
+		thread.createSuspended(true);
 		for(i=1;#items;1){
 			var h = thread.create(tcping,frmV2ray,i,frmV2ray.listview.getItemText(i,2));	 
 			table.push(handles,h);
@@ -177,40 +188,40 @@ frmV2ray.btnTcping.oncommand = function(id,event){
 }
 
 frmV2ray.onDestroy = function(){
-    v2ray.core.stop();
+	v2ray.core.stop();
 }
 
 frmV2ray.listview.onnotify = function(id,code,ptr){
-    select(code) {
-    	case  0xFFFFFFFD/*_NM_DBLCLK*/ {
-    		var nm = frmV2ray.listview.getNotifyMessage(code,ptr);
-    		if( nm ){
+	select(code) {
+		case  0xFFFFFFFD/*_NM_DBLCLK*/ {
+			var nm = frmV2ray.listview.getNotifyMessage(code,ptr);
+			if( nm ){
 				frmV2ray.onTcpingReturn = function(i){}
 				frmV2ray.btnTcping.disabledText = null;
 				
-        		for b,v in table.eachIndex(config.proxy.outbounds){
-    				frmV2ray.listview.setItemText("",b,7);
-    			}
-    			activeOutbound(nm.iItem,frmV2ray.listview.getItemText(nm.iItem,2)); 
-        	}
-    	}
-    	case 0xFFFFFFFB/*_NM_RCLICK*/  {
-    		var x,y = win.getCursorPos();
-    		var nm = frmV2ray.listview.getNotifyMessage(code,ptr);
-    		if(!nm) return;
-    		
-    		var currentIdx = nm.iItem;
-    		var popmenu = win.ui.popmenu(frmV2ray);
-    		popmenu.add('设为活动服务器( 鼠标双击 )',function(id){
+				for b,v in table.eachIndex(config.proxy.outbounds){
+					frmV2ray.listview.setItemText("",b,7);
+				}
+				activeOutbound(nm.iItem,frmV2ray.listview.getItemText(nm.iItem,2)); 
+			}
+		}
+		case 0xFFFFFFFB/*_NM_RCLICK*/  {
+			var x,y = win.getCursorPos();
+			var nm = frmV2ray.listview.getNotifyMessage(code,ptr);
+			if(!nm) return;
+			
+			var currentIdx = nm.iItem;
+			var popmenu = win.ui.popmenu(frmV2ray);
+			popmenu.add('设为活动服务器( 鼠标双击 )',function(id){
 				if(currentIdx){
 					frmV2ray.onTcpingReturn = function(i){}
 					frmV2ray.btnTcping.disabledText = null;
 					
-        			for b,v in table.eachIndex(config.proxy.outbounds){
-    					frmV2ray.listview.setItemText("",b,7);
-    				}
-    				activeOutbound(currentIdx,frmV2ray.listview.getItemText(currentIdx,2))
-        		}
+					for b,v in table.eachIndex(config.proxy.outbounds){
+						frmV2ray.listview.setItemText("",b,7);
+					}
+					activeOutbound(currentIdx,frmV2ray.listview.getItemText(currentIdx,2))
+				}
 			});
 			popmenu.add('复制服务器链接',function(id){
 				if(currentIdx){
@@ -222,19 +233,19 @@ frmV2ray.listview.onnotify = function(id,code,ptr){
 						win.clip.write(str); 
 						frmV2ray.edit.print("已复制链接:",str);
 					}  
-        		}
+				}
 			});
 			popmenu.add();
 			popmenu.add('删除服务器',function(id){
 				if(currentIdx){
 					frmV2ray.listview.delItem(currentIdx);
-        			..table.remove(config.proxy.outbounds,currentIdx);
+					..table.remove(config.proxy.outbounds,currentIdx);
 					publish("config.proxy.outbounds.config.changed");
-        		}
+				}
 			});
-    		popmenu.popup(x,y,true);
-    	}
-    }
+			popmenu.popup(x,y,true);
+		}
+	}
 }
 
 subscribe("config.proxy.outbounds.changed",function(){
@@ -255,10 +266,10 @@ if(#config.proxy.outbounds){
 }
 
 subscribe("config.proxy.mode.changed",function(...){
-    frmV2ray.radioProxyPac.checked = false;
-    frmV2ray.radioProxy.checked = false;
-    frmV2ray.radioProxyDirect.checked = false;
-    
+	frmV2ray.radioProxyPac.checked = false;
+	frmV2ray.radioProxy.checked = false;
+	frmV2ray.radioProxyDirect.checked = false;
+	
 	if(config.proxy.mode = "pac"){
 		frmV2ray.radioProxyPac.checked = true;
 	}

@@ -55,16 +55,16 @@ winform.btnUpdate.skin(style.primaryButton);
 winform.btnUpdate.oncommand = function(id,event){
 	winform.btnUpdate.disabledText = {'\uF254';'\uF251';'\uF252';'\uF253';'\uF250'};
 
-    if(tbs.selIndex==1){
-        if(..string.match(winform.editOutbounds.text,"%\[\]")){
-    		var cfg,err = web.json.tryParse(winform.editOutbounds.text);
-    		if(!cfg){
-    			winform.editOutbounds.showErrorTip(,string.concat("JSON语法错误 ",err));
-    			winform.btnUpdate.disabledText = null;
-    			return;
-    		}
-    		config.proxy.outbounds = cfg : {};
-    	}
+	if(tbs.selIndex==1){
+		if(..string.match(winform.editOutbounds.text,"%\[\]")){
+			var cfg,err = web.json.tryParse(winform.editOutbounds.text);
+			if(!cfg){
+				winform.editOutbounds.showErrorTip(,string.concat("JSON语法错误 ",err));
+				winform.btnUpdate.disabledText = null;
+				return;
+			}
+			config.proxy.outbounds = cfg : {};
+		}
 		else {
 			var outbounds = v2ray.config.importFromString(winform.editOutbounds.text);
 			config.proxy.outbounds = outbounds : {}; 
@@ -74,25 +74,25 @@ winform.btnUpdate.oncommand = function(id,event){
 		config.proxy.save();
 		winform.editOutbounds.modified = false;
 		publish("config.proxy.outbounds.changed",cfg)    	
-    }
-    elseif(tbs.selIndex==2) {
-    	var cfg,err = web.json.tryParse(winform.editCoreConfig.text);
-    	if(type(cfg)!==type.table){
-    		winform.editCoreConfig.showErrorTip(,string.concat("JSON语法错误 ",err));
-    		winform.btnUpdate.disabledText = null;
-    		return;
-    	}
-    	
-    	if(cfg.outbounds[[1]][["tag"]]!="proxy"){
-    		winform.msgErr(`outbounds[1]必须指定为{"tag":"proxy"}`);
-    		winform.btnUpdate.disabledText = null;
-    		return; 
-    	}
-    	
+	}
+	elseif(tbs.selIndex==2) {
+		var cfg,err = web.json.tryParse(winform.editCoreConfig.text);
+		if(type(cfg)!==type.table){
+			winform.editCoreConfig.showErrorTip(,string.concat("JSON语法错误 ",err));
+			winform.btnUpdate.disabledText = null;
+			return;
+		}
+		
+		if(cfg.outbounds[[1]][["tag"]]!="proxy"){
+			winform.msgErr(`outbounds[1]必须指定为{"tag":"proxy"}`);
+			winform.btnUpdate.disabledText = null;
+			return; 
+		}
+		
 		config.core.default = cfg;
 		config.core.save();
 		publish("config.proxy.outbounds.changed",cfg)   
-    } 
+	} 
 
 	win.delay(500);
 	winform.btnUpdate.disabledText = null;
@@ -109,19 +109,19 @@ winform.editOutbounds.enablePopMenu(function(){
 				function(id){ 
 					var str = winform.editOutbounds.text;
 					
-    				
+					
 					var outbounds = v2ray.config.importFromClip();
 					if(#outbounds){ 
 						
 						if(..string.match(winform.editOutbounds.text,"%\[\]")){
 							var cfg,err = web.json.tryParse(winform.editOutbounds.text);
-    						if(!cfg){
-    							winform.editOutbounds.showErrorTip(,string.concat("当前配置存在JSON语法错误 ",err));
-    							return;
-    						}
-    						
-    						..table.append(cfg,outbounds);
-    						winform.editOutbounds.text = ..web.json.stringify(cfg,true);
+							if(!cfg){
+								winform.editOutbounds.showErrorTip(,string.concat("当前配置存在JSON语法错误 ",err));
+								return;
+							}
+							
+							..table.append(cfg,outbounds);
+							winform.editOutbounds.text = ..web.json.stringify(cfg,true);
 						}
 						else {
 							var str = v2ray.config.exportToString(outbounds);
@@ -143,11 +143,11 @@ winform.editOutbounds.enablePopMenu(function(){
 			menu[3] = { "转换为 vmess:// 或 ss:// 链接";
 				function(id){ 
 					var cfg,err = web.json.tryParse(winform.editOutbounds.text);
-    				if(!cfg){
-    					winform.editOutbounds.showErrorTip(,string.concat("JSON语法错误 ",err));
-    					return;
-    				}
-    	
+					if(!cfg){
+						winform.editOutbounds.showErrorTip(,string.concat("JSON语法错误 ",err));
+						return;
+					}
+		
 					var str = v2ray.config.exportToString(cfg);
 					if(str){ 
 						winform.editOutbounds.text = str;
@@ -158,12 +158,12 @@ winform.editOutbounds.enablePopMenu(function(){
 			menu[4] = { "转换为文本格式";
 				function(id){ 
 					var cfg,err = web.json.tryParse(winform.editOutbounds.text);
-    				if(!cfg){
-    					winform.editOutbounds.showErrorTip(,string.concat("JSON语法错误 ",err));
-    					return;
-    				}
-    	
-    				var outstr = {};
+					if(!cfg){
+						winform.editOutbounds.showErrorTip(,string.concat("JSON语法错误 ",err));
+						return;
+					}
+		
+					var outstr = {};
 					for i,outbound in table.eachIndex(cfg){
 						if(outbound.protocol != "shadowsocks"){
 							table.push(outstr, string.concat( outbound.address,'\t'
@@ -224,10 +224,10 @@ winform.editOutbounds.enablePopMenu(function(){
 })
 
 subscribe("config.proxy.outbounds.config.changed",function(){
-    if(winform.editOutbounds.modified){
-    	return;
-    }
-    
+	if(winform.editOutbounds.modified){
+		return;
+	}
+	
 	winform.editOutbounds.text = web.json.stringify( 
 		config.proxy.outbounds,true
 	)
@@ -236,7 +236,7 @@ subscribe("config.proxy.outbounds.config.changed",function(){
 } )
 
 winform.editOutbounds.text = #config.proxy.outbounds ? web.json.stringify( 
-	 config.proxy.outbounds ,true
+		config.proxy.outbounds ,true
 ) : "[]"
 winform.editOutbounds.modified = false;
 

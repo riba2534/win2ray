@@ -33,7 +33,7 @@ if(!atom){
 
 import v2ray.core;
 if(!v2ray.core.getPath()) {
-    mainForm.close();
+	mainForm.close();
 	return;
 }
 
@@ -80,7 +80,7 @@ mainForm.onMinimize = function(lParam){
 
 import inet.conn;
 mainForm.onDestroy = function(){
-    mainForm.tray.delete(); 
+	mainForm.tray.delete(); 
 	inet.conn.setProxy();
 }
 
